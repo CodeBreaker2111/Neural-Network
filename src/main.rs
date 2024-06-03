@@ -331,7 +331,7 @@ fn train_network2(networks: &Vec<Vec<Vec<Vec<f32>>>>, inputs: &Vec<Vec<f32>>, ta
     
     let networks: Vec<Vec<Vec<Vec<f32>>>> = vec![net1.clone(), net2.clone(), net3.clone(), net4.clone(), net5.clone(), net6.clone(), net7.clone(), net8.clone(), net9.clone(), net10.clone(), net11.clone(), net12.clone(), net13.clone(), net14.clone(), net15.clone(), net16.clone(), net17.clone(), net18.clone(), net19.clone(), net20.clone()];
     let mut outputs: Vec<Vec<Vec<f32>>> = vec![];
-    let mut output_errors: Vec<Vec<Vec<f32>>> = vec![]; // write to output errors
+    let mut output_errors: Vec<Vec<Vec<f32>>> = vec![];
     let mut scores: Vec<f32> = vec![];
 
     for _ in 0..networks.len() {
@@ -373,6 +373,18 @@ fn train_network2(networks: &Vec<Vec<Vec<Vec<f32>>>>, inputs: &Vec<Vec<f32>>, ta
         }
 
         outputs.push(net_output);
+    }
+
+    for i in 0..outputs.len() {
+        let mut o_errors: Vec<Vec<f32>> = outputs[i].clone();
+
+        for x in 0..outputs[i].len() {
+            for y in 0..outputs[i][x].len() {
+                o_errors[i][x] = outputs[i][x][y] - targets[i][x];
+            }
+        }
+
+        output_errors.push(o_errors);
     }
 
     let mut prescore: Vec<Vec<Vec<f32>>> = output_errors.clone();
