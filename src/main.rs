@@ -37,8 +37,12 @@ pub fn main() {
         let inputs1: Vec<Vec<f32>> = vec![image(&"numbers/one1.png".to_string()), image(&"numbers/one2.png".to_string()), image(&"numbers/one3.png".to_string()), image(&"numbers/one4.png".to_string()), image(&"numbers/one5.png".to_string()), image(&"numbers/two1.png".to_string()), image(&"numbers/two2.png".to_string()),image(&"numbers/three1.png".to_string()), image(&"numbers/three2.png".to_string()), image(&"numbers/three3.png".to_string()), image(&"numbers/three4.png".to_string()), image(&"numbers/three5.png".to_string()), image(&"numbers/four1.png".to_string()), image(&"numbers/four2.png".to_string()), image(&"numbers/four3.png".to_string()), image(&"numbers/four4.png".to_string()), image(&"numbers/four5.png".to_string()), image(&"numbers/five1.png".to_string()), image(&"numbers/five2.png".to_string()), image(&"numbers/five3.png".to_string()), image(&"numbers/five4.png".to_string()), image(&"numbers/five5.png".to_string()), image(&"numbers/six1.png".to_string()), image(&"numbers/six2.png".to_string()), image(&"numbers/six3.png".to_string()), image(&"numbers/six4.png".to_string()), image(&"numbers/six5.png".to_string()), image(&"numbers/seven1.png".to_string()), image(&"numbers/seven2.png".to_string()), image(&"numbers/seven3.png".to_string()), image(&"numbers/seven4.png".to_string()), image(&"numbers/seven5.png".to_string()), image(&"numbers/eight1.png".to_string()), image(&"numbers/eight2.png".to_string()), image(&"numbers/eight3.png".to_string()), image(&"numbers/eight4.png".to_string()), image(&"numbers/eight5.png".to_string()), image(&"numbers/nine1.png".to_string()), image(&"numbers/nine2.png".to_string()), image(&"numbers/nine3.png".to_string()), image(&"numbers/nine4.png".to_string()), image(&"numbers/nine5.png".to_string()), image(&"numbers/zero1.png".to_string()), image(&"numbers/zero2.png".to_string()), image(&"numbers/zero3.png".to_string()), image(&"numbers/zero4.png".to_string()), image(&"numbers/zero5.png".to_string())];
         //let inputs1: Vec<Vec<f32>> = vec![image(&"numbers/one1.png".to_string())];
 
-        let mut change_logs: Vec<String> = vec![];
-        let mut train: (Vec<Vec<Vec<f32>>>, Vec<String>);
+        println!("Enter change rate: ");
+        let change_rate: f32 = get_input().parse().expect("Please enter a valid number");
+
+        let mut nets: Vec<Vec<Vec<Vec<f32>>>> = read_nets(change_rate);
+        let mut train: (Vec<Vec<Vec<Vec<f32>>>>, Vec<f32>) = (vec![], vec![]);
+        let mut scores: Vec<f32> = vec![];
 
         for _ in 0..epochs {
             // Load input and target data for training
@@ -46,16 +50,21 @@ pub fn main() {
             //let targets: Vec<Vec<f32>> = vec![vec![100.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]];
 
             // Train the network
-            train = train_network(&net1, &inputs1, &targets, 0.000001, &change_logs); // Example learning rate
+            train = train_network2(&nets, &inputs1, &targets, change_rate); // Example learning rate
 
-            net1 = train.0;
-            change_logs = train.1;
+            nets = train.0;
+            scores = train.1;
+
+            nets = eliminate(&nets, scores.clone(), change_rate)
         }
 
-        println!("Enter net save path: ");
-        let save_path = get_input();
+        let mut i = 0;
 
-        write_network_to_file(&net1, &save_path).expect("Failed to write network to file");
+        for n in nets {
+            let _ = write_network_to_file(&n, format!("networks/net{}.json", i).as_str());
+
+            i += 1;
+        }
     }
 
     println!("Please enter path to image: ");
@@ -188,64 +197,7 @@ fn read_network_from_file(file_path: &str) -> Vec<Vec<Vec<f32>>> {
     network
 }
 
-fn train_network(network: &Vec<Vec<Vec<f32>>>, inputs: &Vec<Vec<f32>>, targets: &Vec<Vec<f32>>, learning_rate: f32, change_logs: &Vec<String>) -> (Vec<Vec<Vec<f32>>>, Vec<String>) {
-    let mut net = network.clone();
-    let logs = change_logs.clone();
-
-    for x in 0..inputs.len() {
-        let input = &inputs[x];
-        let target = &targets[x];
-
-        // Forward pass
-        let mut hidden_outputs: Vec<f32> = vec![];
-        for i in 0..15 {
-            hidden_outputs.push(calc_num(input, &net[0][i], net[1][0][i]));
-        }
-
-        let mut final_outputs: Vec<f32> = vec![];
-        for i in 15..25 {
-            final_outputs.push(calc_num(&hidden_outputs, &net[0][i], net[1][0][i]));
-        }
-
-        // Calculate output errors
-        let mut output_errors: Vec<f32> = vec![];
-        for i in 0..target.len() {
-            output_errors.push(target[i] - final_outputs[i]);
-        }
-
-        // Update weights and biases for the output layer
-        for i in 15..25 {
-            for j in 0..hidden_outputs.len() {
-                net[0][i][j] += learning_rate * output_errors[i - 15] * hidden_outputs[j];
-                //logs.push(format!("output layer weights update: net[0][{}][{}] += {} * {} * {}", i.to_string(), j.to_string(), learning_rate.to_string(), output_errors[i - 15].to_string(), hidden_outputs[j].to_string()));
-            }
-            net[1][0][i] += learning_rate * output_errors[i - 15];
-            //logs.push(format!("output layer biases update: net[1][0][{}], += {} * {}", i.to_string(), learning_rate, output_errors[i - 15]));
-        }
-
-        // Calculate hidden layer errors
-        let mut hidden_errors: Vec<f32> = vec![0.0; 15];
-        for i in 0..hidden_errors.len() {
-            for j in 15..25 {
-                hidden_errors[i] += output_errors[j - 15] * net[0][j][i];
-            }
-        }
-
-        // Update weights and biases for the hidden layer
-        for i in 0..15 {
-            for j in 0..input.len() {
-                net[0][i][j] += learning_rate * hidden_errors[i] * input[j];
-                //logs.push(format!("hidden layer weights update: net[0][{}][{}] += {} * {} * {}", i.to_string(), j.to_string(), learning_rate.to_string(), hidden_errors[i].to_string(), input[j].to_string()));
-            }
-            net[1][0][i] += learning_rate * hidden_errors[i];
-            //logs.push(format!("hidden layer biases update: net[1][0][{}] += {} * {}", i.to_string(), learning_rate.to_string(), hidden_errors[i].to_string()));
-        }
-    }
-
-    (net, logs)
-}
-
-fn train_network2(networks: &Vec<Vec<Vec<Vec<f32>>>>, inputs: &Vec<Vec<f32>>, targets: &Vec<Vec<f32>>, learning_rate: f32) {
+fn train_network2(networks: &Vec<Vec<Vec<Vec<f32>>>>, inputs: &Vec<Vec<f32>>, targets: &Vec<Vec<f32>>, learning_rate: f32) -> (Vec<Vec<Vec<Vec<f32>>>>, Vec<f32>) {
     let mut net1 = &networks.clone()[0];
     let mut net2 = &networks.clone()[1];
     let mut net3 = &networks.clone()[2];
@@ -265,28 +217,7 @@ fn train_network2(networks: &Vec<Vec<Vec<Vec<f32>>>>, inputs: &Vec<Vec<f32>>, ta
     let mut net17 = &networks.clone()[16];
     let mut net18 = &networks.clone()[17];
     let mut net19 = &networks.clone()[18];
-    let mut net20 = &networks.clone()[29];
-    
-    let _ = write_network_to_file(&net1, "networks/net1.json");
-    let _ = write_network_to_file(&net2, "networks/net2.json");
-    let _ = write_network_to_file(&net3, "networks/net3.json");
-    let _ = write_network_to_file(&net4, "networks/net4.json");
-    let _ = write_network_to_file(&net5, "networks/net5.json");
-    let _ = write_network_to_file(&net6, "networks/net6.json");
-    let _ = write_network_to_file(&net7, "networks/net7.json");
-    let _ = write_network_to_file(&net8, "networks/net8.json");
-    let _ = write_network_to_file(&net9, "networks/net9.json");
-    let _ = write_network_to_file(&net10, "networks/net10.json");
-    let _ = write_network_to_file(&net11, "networks/net11.json");
-    let _ = write_network_to_file(&net12, "networks/net12.json");
-    let _ = write_network_to_file(&net13, "networks/net13.json");
-    let _ = write_network_to_file(&net14, "networks/net14.json");
-    let _ = write_network_to_file(&net15, "networks/net15.json");
-    let _ = write_network_to_file(&net16, "networks/net16.json");
-    let _ = write_network_to_file(&net17, "networks/net17.json");
-    let _ = write_network_to_file(&net18, "networks/net18.json");
-    let _ = write_network_to_file(&net19, "networks/net19.json");
-    let _ = write_network_to_file(&net20, "networks/net20.json");
+    let mut net20 = &networks.clone()[19];
 
     let net1_clone = change_net(&net1[1][0], &net1[0], learning_rate);
     net1 = &net1_clone;
@@ -418,6 +349,8 @@ fn train_network2(networks: &Vec<Vec<Vec<Vec<f32>>>>, inputs: &Vec<Vec<f32>>, ta
 
         scores.push(target_score);
     }
+
+    return (vec![(*net1.clone()).to_vec(),(*net2.clone()).to_vec(),(*net3.clone()).to_vec(),(*net4.clone()).to_vec(),(*net5.clone()).to_vec(),(*net6.clone()).to_vec(),(*net7.clone()).to_vec(),(*net8.clone()).to_vec(),(*net9.clone()).to_vec(), (net10.clone()).to_vec(), (net11.clone()).to_vec(), (net12.clone()).to_vec(), (net13.clone()).to_vec(), (net14.clone()).to_vec(), (net15.clone()).to_vec(), (net16.clone()).to_vec(), (net17.clone()).to_vec(), (net18.clone()).to_vec(), (net19.clone()).to_vec(), (net20.clone()).to_vec()], scores);
 }
 
 fn eliminate(networks: &Vec<Vec<Vec<Vec<f32>>>>, scores: Vec<f32>, change_rate: f32) -> Vec<Vec<Vec<Vec<f32>>>> {
@@ -457,4 +390,8 @@ fn eliminate(networks: &Vec<Vec<Vec<Vec<f32>>>>, scores: Vec<f32>, change_rate: 
     nets[15] = change_net(&sorted_networks[19][1][0], &sorted_networks[19][0], change_rate);
     
     nets
+}
+
+fn read_nets(change_rate: f32) -> Vec<Vec<Vec<Vec<f32>>>> {
+    return vec![change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), change_net(&read_network_from_file("net")[1][0], &read_network_from_file("net")[0], change_rate), ];
 }
