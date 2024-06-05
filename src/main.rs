@@ -311,7 +311,7 @@ fn train_network2(networks: &Vec<Vec<Vec<Vec<f32>>>>, inputs: &Vec<Vec<f32>>, ta
 
         for x in 0..outputs[i].len() {
             for y in 0..outputs[i][x].len() {
-                o_errors[i][x] = outputs[i][x][y] - targets[i][x];
+                o_errors[x][y] = outputs[i][x][y] - targets[x][y];
             }
         }
 
