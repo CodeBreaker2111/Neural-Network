@@ -419,3 +419,42 @@ fn train_network2(networks: &Vec<Vec<Vec<Vec<f32>>>>, inputs: &Vec<Vec<f32>>, ta
         scores.push(target_score);
     }
 }
+
+fn eliminate(networks: &Vec<Vec<Vec<Vec<f32>>>>, scores: Vec<f32>, change_rate: f32) -> Vec<Vec<Vec<Vec<f32>>>> {
+    let mut network_score_pairs: Vec<(&Vec<Vec<Vec<f32>>>, f32)> = 
+        networks.iter().zip(scores.iter()).map(|(network, &score)| (network, score)).collect();
+
+    // Sort the vector of tuples by the scores
+    network_score_pairs.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+
+    let sorted_networks: Vec<&Vec<Vec<Vec<f32>>>> = network_score_pairs.iter().map(|&(network, _)| network).collect();
+
+    let mut nets = networks.clone();
+
+    nets[16] = (sorted_networks[16].clone()).to_vec();
+    nets[17] = (sorted_networks[17].clone()).to_vec();
+    nets[18] = (sorted_networks[18].clone()).to_vec();
+    nets[19] = (sorted_networks[19].clone()).to_vec();
+
+    nets[0] = change_net(&sorted_networks[16][1][0], &sorted_networks[16][0], change_rate);
+    nets[1] = change_net(&sorted_networks[16][1][0], &sorted_networks[16][0], change_rate);
+    nets[2] = change_net(&sorted_networks[16][1][0], &sorted_networks[16][0], change_rate);
+    nets[3] = change_net(&sorted_networks[16][1][0], &sorted_networks[16][0], change_rate);
+
+    nets[4] = change_net(&sorted_networks[17][1][0], &sorted_networks[17][0], change_rate);
+    nets[5] = change_net(&sorted_networks[17][1][0], &sorted_networks[17][0], change_rate);
+    nets[6] = change_net(&sorted_networks[17][1][0], &sorted_networks[17][0], change_rate);
+    nets[7] = change_net(&sorted_networks[17][1][0], &sorted_networks[17][0], change_rate);
+    
+    nets[8] = change_net(&sorted_networks[18][1][0], &sorted_networks[18][0], change_rate);
+    nets[9] = change_net(&sorted_networks[18][1][0], &sorted_networks[18][0], change_rate);
+    nets[10] = change_net(&sorted_networks[18][1][0], &sorted_networks[18][0], change_rate);
+    nets[11] = change_net(&sorted_networks[18][1][0], &sorted_networks[18][0], change_rate);
+    
+    nets[12] = change_net(&sorted_networks[19][1][0], &sorted_networks[19][0], change_rate);
+    nets[13] = change_net(&sorted_networks[19][1][0], &sorted_networks[19][0], change_rate);
+    nets[14] = change_net(&sorted_networks[19][1][0], &sorted_networks[19][0], change_rate);
+    nets[15] = change_net(&sorted_networks[19][1][0], &sorted_networks[19][0], change_rate);
+    
+    nets
+}
