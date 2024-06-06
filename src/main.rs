@@ -1,6 +1,6 @@
 use rand::Rng;
 use std::fs::File;
-use std::io::{self, BufReader, BufWriter};
+use std::io::{self, BufReader, BufWriter, Write};
 
 pub fn main() {
     let mut net1: Vec<Vec<Vec<f32>>> = vec![];
@@ -57,7 +57,10 @@ pub fn main() {
 
             nets = eliminate(&nets, scores.clone(), change_rate);
 
-            println!("{} / {} epochs complete", i, epochs);
+            let percent = (i as f32 / epochs as f32) * 100.0;
+
+            print!("\r{:.2}% complete", percent);
+            io::stdout().flush().unwrap();
         }
 
         let mut i = 0;
