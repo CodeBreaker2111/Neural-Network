@@ -72,36 +72,17 @@ pub fn main() {
 
     let inputs1: Vec<f32> = image(&image_path);
 
-    let n1 = calc_num(&inputs1, &net1[0][0], net1[1][0][0]);
-    let n2 = calc_num(&inputs1, &net1[0][1], net1[1][0][1]);
-    let n3 = calc_num(&inputs1, &net1[0][2], net1[1][0][2]);
-    let n4 = calc_num(&inputs1, &net1[0][3], net1[1][0][3]);
-    let n5 = calc_num(&inputs1, &net1[0][4], net1[1][0][4]);
-    let n6 = calc_num(&inputs1, &net1[0][5], net1[1][0][5]);
-    let n7 = calc_num(&inputs1, &net1[0][6], net1[1][0][6]);
-    let n8 = calc_num(&inputs1, &net1[0][7], net1[1][0][7]);
-    let n9 = calc_num(&inputs1, &net1[0][8], net1[1][0][8]);
-    let n10 = calc_num(&inputs1, &net1[0][9], net1[1][0][9]);
-    let n11 = calc_num(&inputs1, &net1[0][10], net1[1][0][10]);
-    let n12 = calc_num(&inputs1, &net1[0][11], net1[1][0][11]);
-    let n13 = calc_num(&inputs1, &net1[0][12], net1[1][0][12]);
-    let n14 = calc_num(&inputs1, &net1[0][13], net1[1][0][13]);
-    let n15 = calc_num(&inputs1, &net1[0][14], net1[1][0][14]);
+    let mut ins: Vec<f32> = vec![]; // ins: internal neurons
 
-    let ins: Vec<f32> = vec![n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15]; // ins: internal neurons
+    for i in 0..129 {
+        ins.push(calc_num(&inputs1, &net1[0][i], net1[1][0][i]));
+    }
 
-    let n16 = calc_num(&ins, &net1[0][15], net1[1][0][15]);
-    let n17 = calc_num(&ins, &net1[0][16], net1[1][0][16]);
-    let n18 = calc_num(&ins, &net1[0][17], net1[1][0][17]);
-    let n19 = calc_num(&ins, &net1[0][18], net1[1][0][18]);
-    let n20 = calc_num(&ins, &net1[0][19], net1[1][0][19]);
-    let n21 = calc_num(&ins, &net1[0][20], net1[1][0][20]);
-    let n22 = calc_num(&ins, &net1[0][21], net1[1][0][21]);
-    let n23 = calc_num(&ins, &net1[0][22], net1[1][0][22]);
-    let n24 = calc_num(&ins, &net1[0][23], net1[1][0][23]);
-    let n25 = calc_num(&ins, &net1[0][24], net1[1][0][24]);
+    let mut output: Vec<f32> = vec![];
 
-    let output: Vec<f32> = vec![n16, n17, n18, n19, n20, n21, n22, n23, n24, n25];
+    for i in 0..9 {
+        output.push(calc_num(&ins, &net1[0][i + 130], net1[1][0][i + 130]));
+    }
 
     println!("{:?}", output);
 }
@@ -269,36 +250,17 @@ fn train_network2(networks: &Vec<Vec<Vec<Vec<f32>>>>, inputs: &Vec<Vec<f32>>, ta
         let mut net_output: Vec<Vec<f32>> = vec![];
 
         for input in inputs {
-            let n1 = calc_num(&input, &net1[0][0], net1[1][0][0]);
-            let n2 = calc_num(&input, &net1[0][1], net1[1][0][1]);
-            let n3 = calc_num(&input, &net1[0][2], net1[1][0][2]);
-            let n4 = calc_num(&input, &net1[0][3], net1[1][0][3]);
-            let n5 = calc_num(&input, &net1[0][4], net1[1][0][4]);
-            let n6 = calc_num(&input, &net1[0][5], net1[1][0][5]);
-            let n7 = calc_num(&input, &net1[0][6], net1[1][0][6]);
-            let n8 = calc_num(&input, &net1[0][7], net1[1][0][7]);
-            let n9 = calc_num(&input, &net1[0][8], net1[1][0][8]);
-            let n10 = calc_num(&input, &net1[0][9], net1[1][0][9]);
-            let n11 = calc_num(&input, &net1[0][10], net1[1][0][10]);
-            let n12 = calc_num(&input, &net1[0][11], net1[1][0][11]);
-            let n13 = calc_num(&input, &net1[0][12], net1[1][0][12]);
-            let n14 = calc_num(&input, &net1[0][13], net1[1][0][13]);
-            let n15 = calc_num(&input, &net1[0][14], net1[1][0][14]);
+            let mut ins: Vec<f32> = vec![]; // ins: internal neurons
 
-            let ins: Vec<f32> = vec![n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15]; // ins: internal neurons
-
-            let n16 = calc_num(&ins, &net1[0][15], net1[1][0][15]);
-            let n17 = calc_num(&ins, &net1[0][16], net1[1][0][16]);
-            let n18 = calc_num(&ins, &net1[0][17], net1[1][0][17]);
-            let n19 = calc_num(&ins, &net1[0][18], net1[1][0][18]);
-            let n20 = calc_num(&ins, &net1[0][19], net1[1][0][19]);
-            let n21 = calc_num(&ins, &net1[0][20], net1[1][0][20]);
-            let n22 = calc_num(&ins, &net1[0][21], net1[1][0][21]);
-            let n23 = calc_num(&ins, &net1[0][22], net1[1][0][22]);
-            let n24 = calc_num(&ins, &net1[0][23], net1[1][0][23]);
-            let n25 = calc_num(&ins, &net1[0][24], net1[1][0][24]);
-
-            let output: Vec<f32> = vec![n16, n17, n18, n19, n20, n21, n22, n23, n24, n25];
+            for i in 0..129 {
+                ins.push(calc_num(&input, &net1[0][i], net1[1][0][i]));
+            }
+        
+            let mut output: Vec<f32> = vec![];
+        
+            for i in 0..9 {
+                output.push(calc_num(&ins, &net1[0][i + 130], net1[1][0][i + 130]));
+            }
 
             net_output.push(output);
         }
